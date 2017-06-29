@@ -27,22 +27,27 @@ app.post('/', function(req, res) {
 	  'Content-Type':'application/json;charset=UTF-8'
 	}
 	var options = {
-	    host: 'spark://bigdata-VirtualBox:6066/v1/submissions/create',
+	    host: 'spark://bigdata-VirtualBox',
+	    port: 6066,
 	    method: 'POST',
 	    headers: headers,
-	    path:'/'}
+	    path:'/v1/submissions/create'}
 
-	var data = '{"action" : "CreateSubmissionRequest","appArgs" : [ req.body.dtInicio, req.body.dtFim ], "appResource" : "file:/home/Documentos/dados/target/scala-2.11/driveclientesapp_2.11-1.0.jar", "clientSparkVersion" : "2.1.0", "environmentVariables" : {"SPARK_ENV_LOADED" : "1"},"mainClass" : "com.UFRJ.driveClientesApp","sparkProperties" : {"spark.jars" : "file:/home/Documentos/dados/target/scala-2.11/driveclientesapp_2.11-1.0.jar",   "spark.driver.supervise" : "false","spark.app.name" : "driveClientesApp","spark.eventLog.enabled": "true","spark.submit.deployMode" : "cluster",  "spark.master" : "spark://bigdata-VirtualBox:6066"}}'
+	var data = '{"action" : "CreateSubmissionRequest","appArgs" : [ req.body.dtInicio, req.body.dtFim ], "appResource" : "file:/home/Documentos/server/dados/target/scala-2.11/driveclientesapp_2.11-1.0.jar", "clientSparkVersion" : "2.1.0", "environmentVariables" : {"SPARK_ENV_LOADED" : "1"},"mainClass" : "com.UFRJ.driveClientesApp","sparkProperties" : {"spark.jars" : "file:/home/Documentos/server/dados/target/scala-2.11/driveclientesapp_2.11-1.0.jar",   "spark.driver.supervise" : "false","spark.app.name" : "driveClientesApp","spark.eventLog.enabled": "true","spark.submit.deployMode" : "cluster",  "spark.master" : "spark://bigdata-VirtualBox:6066"}}'
 
-	var req = http.request(options, function(res) {
+	var req = http.request(options, function(error, res) {
 	    res.setEncoding('utf8');
 	    res.on('data', function (chunk) {
 		console.log("body: " + chunk);
 	    });
+	    if (error) {
+		debug.print("error:" + error)
+		res.redirect('/');		
+		}
 	});
 
-	req.write(data)
-	req.end()
+	//req.write(data)
+	//req.end()
 	// Start the request
 	sleep.sleep(10);
 	res.redirect('/');

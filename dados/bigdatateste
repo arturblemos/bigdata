@@ -1,0 +1,25 @@
+val vendasDF = spark.read.format("csv").option("header","true").option("delimiter",";").csv("../../Documentos/dados/comprasProdutos.csv")
+
+val clientesTipo = vendasDF.groupBy("CLIENTE","TIPOPRODUTO").count 
+val maxval = clientesTipo.groupBy("CLIENTE").max("count")
+val cliFilter = clientesTipo.join(maxval, clientesTipo("CLIENTE") === maxval("CLIENTE")).select(clientesTipo("CLIENTE"), clientesTipo("TIPOPRODUTO"), col("count").alias("countVal"), col("max(count)").alias("COUNTTIPO"))
+val clientesDriveTipoAux = cliFilter.filter("countVal = COUNTTIPO")
+val clientesDriveTipo = clientesDriveTipoAux.select(clientesDriveTipoAux("CLIENTE"),clientesDriveTipoAux("TIPOPRODUTO"),clientesDriveTipoAux("COUNTTIPO")).filter($"COUNTTIPO">1)
+	
+val clientesGrupo = vendasDF.groupBy("CLIENTE","GRUPO").count
+val maxval = clientesGrupo.groupBy("CLIENTE").max("count")
+val cliFilter = clientesGrupo.join(maxval, clientesGrupo("CLIENTE") === maxval("CLIENTE")).select(clientesGrupo("CLIENTE"), clientesGrupo("GRUPO"), col("count").alias("countVal"), col("max(count)").alias("COUNTGRUPO"))
+val clientesDriveGrupoAux = cliFilter.filter("countVal = COUNTGRUPO")
+val clientesDriveGrupo = clientesDriveGrupoAux.select(clientesDriveGrupoAux("CLIENTE"),clientesDriveGrupoAux("GRUPO"),clientesDriveGrupoAux("COUNTGRUPO")).filter($"COUNTGRUPO">1)
+
+val clientesSubgrupo = vendasDF.groupBy("CLIENTE","SUBGRUPO").count
+val maxval = clientesSubgrupo.groupBy("CLIENTE").max("count")
+val cliFilter = clientesSubgrupo.join(maxval, clientesSubgrupo("CLIENTE") === maxval("CLIENTE")).select(clientesSubgrupo("CLIENTE"), clientesSubgrupo("SUBGRUPO"), col("count").alias("countVal"), col("max(count)").alias("COUNTSUBGRUPO"))
+val clientesDriveSubgrupoAux = cliFilter.filter("countVal = COUNTSUBGRUPO")
+val clientesDriveSubgrupo = clientesDriveSubgrupoAux.select(clientesDriveSubgrupoAux("CLIENTE"),clientesDriveSubgrupoAux("SUBGRUPO"),clientesDriveSubgrupoAux("COUNTSUBGRUPO")).filter($"COUNTSUBGRUPO">1)
+
+val cliJoin1 = clientesDriveTipo.join(clientesDriveGrupo, clientesDriveGrupo("CLIENTE") === clientesDriveTipo("CLIENTE")).select(clientesDriveTipo("CLIENTE"),clientesDriveTipo("TIPOPRODUTO"),clientesDriveTipo("COUNTTIPO"),col("GRUPO"),clientesDriveGrupo("COUNTGRUPO"))
+
+val clientesDrive = cliJoin1.join(clientesDriveSubgrupo, clientesDriveSubgrupo("CLIENTE") === cliJoin1("CLIENTE")).select(cliJoin1("CLIENTE"),cliJoin1("TIPOPRODUTO"),cliJoin1("COUNTTIPO"),cliJoin1("GRUPO"),cliJoin1("COUNTGRUPO"),col("SUBGRUPO"),col("COUNTSUBGRUPO"))
+
+clientesDrive.repartition(1).write.format("com.databricks.spark.csv").option("header","true").option("codec","org.apache.hadoop.io.compress.GzipCodec").save("Documentos/dados/resultados")
