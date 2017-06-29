@@ -1,0 +1,21 @@
+{
+  "name": "bigdataserver",
+  "version": "1.0.0",
+  "description": "Trabalho Big Data - UFRJ - 27/06/17",
+  "main": "app.js",
+  "dependencies": {
+    "express": "*",
+    "body-parser": "*",
+    "http": "*",
+    "path": "*",
+    "request": "*",
+    "sleep": "*"
+
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Artur Lemos",
+  "license": "MIT"
+}
